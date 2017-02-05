@@ -1,0 +1,38 @@
+server {
+    listen 80;
+    server_name proxmox.nsh.ovh;
+    return 301 https://$host$request_uri;
+
+location '/.well-known/acme-challenge' {
+    root /var/www/proxmox.nsh.ovh/;
+    try_files $uri /$1;
+    }	
+}
+
+server {
+    listen      443 http2;
+    server_name  proxmox.nsh.ovh;
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live-ecdsa/proxmox.nsh.ovh/chain.pem;
+    ssl_certificate_key /etc/letsencrypt/live-ecdsa/proxmox.nsh.ovh/privkey-p384.pem;
+
+    if ($request_method !~ ^(GET|HEAD|POST)$ ) {
+    return 444;
+    }
+
+
+location '/.well-known/acme-challenge' {
+    root /var/www/proxmox.nsh.ovh/;
+    try_files $uri /$1;
+    }
+
+location / {
+    proxy_pass https://10.26.78.11:8006/;
+    proxy_cache cache;
+    proxy_cache_valid 12h;
+    expires 12h;
+    proxy_cache_use_stale error timeout invalid_header updating;
+    auth_basic "Restricted";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    }
+}
