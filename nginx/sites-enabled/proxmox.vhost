@@ -28,6 +28,9 @@ location '/.well-known/acme-challenge' {
 
 location / {
     proxy_pass https://10.26.78.11:8006/;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade"; 
     proxy_cache cache;
     proxy_cache_valid 12h;
     expires 12h;
